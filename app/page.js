@@ -8,6 +8,14 @@ export default function Example() {
 
   return (
     <div className="relative isolate overflow-hidden bg-gray-900 py-24 sm:py-32">
+      <div className="absolute top-0 left-0 p-4">
+        <a href="https://twitter.com/BtcMonkies" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-400 mr-4">
+          Twitter
+        </a>
+        <a href="https://magiceden.io/ordinals/marketplace/madmonkies" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-400">
+          MagicEden
+        </a>
+      </div>
       <img
         src="/mm.jpg"
         alt=""
