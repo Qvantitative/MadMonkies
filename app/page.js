@@ -1,11 +1,10 @@
 import React from "react";
 
 const App = () => {
-
   return (
-    <div className="bg-customGray relative min-h-screen md:w-1/2" style={{ paddingTop: "100px" }}>
-      {/* Background Image */}
+    <div className="bg-customGray relative h-screen overflow-hidden">
       <div className="absolute inset-0 flex items-center justify-center">
+        {/* Background Image */}
         <img
           src="/MAD.png" // Path to your image in the "public" folder
           alt="Background Image"
@@ -14,11 +13,11 @@ const App = () => {
       </div>
 
       <div className="flex flex-col justify-start items-center min-h-screen relative">
-        {/* Logo */}
+        {/* Logo (Adjusted margin-top for higher positioning) */}
         <img
           src="/LOGO.png" // Path to your logo image in the "public" folder
           alt="Logo"
-          className="h-32 w-64 mt-4 mb-4"
+          className="h-32 w-64 mt-12 mb-4" // Adjusted mt-12 to move it higher
         />
 
         <div className="space-y-4 mt-4">
