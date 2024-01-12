@@ -17,7 +17,7 @@ const App = () => {
         <img
           src="/LOGO.png" // Path to your logo image in the "public" folder
           alt="Logo"
-          className="h-32 w-64 mt-24 mb-36" // Adjusted mt-12 to move it higher
+          className="h-32 w-64 mt-24 mb-4" // Adjusted mt-12 to move it higher
         />
 
         <div className="space-y-4 mt-0">
@@ -28,7 +28,7 @@ const App = () => {
         </div>
 
         {/* Move the content to the bottom */}
-        <div className="h-36"></div>
+        <div className="h-72"></div>
         <div className="mb-0 text-center text-customGreen font-joystix_monospace p-0">
           <p className="text-xs">MONKEYS ARE DEAD</p>
         </div>
