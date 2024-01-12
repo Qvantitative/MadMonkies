@@ -29,8 +29,10 @@ const App = () => {
 
         {/* Move the content to the bottom */}
         <div className="flex-grow"></div>
-        <div className="mb-0 text-center text-customGreen font-joystix_monospace p-2">
-          <p className="text-md">MONKEYS ARE DEAD</p>
+        <div className="mb-0 text-center text-customGreen font-joystix_monospace p-0">
+          <p className="text-xs">MONKEYS ARE DEAD</p>
+        </div>
+        <div className="mb-6 text-center text-customGreen font-upheavtt p-8">
           <p className="text-md">LONG LIVE THE MONKIES</p>
         </div>
       </div>
