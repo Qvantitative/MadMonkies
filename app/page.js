@@ -2,7 +2,7 @@ import React from "react";
 
 const App = () => {
   return (
-    <div className="bg-customGray relative min-h-screen">
+    <div className="bg-customGray relative min-h-screen" style={{ paddingTop: "100px" }}>
       {/* Background Image */}
       <div className="absolute inset-0 flex items-center justify-center">
         <img
