@@ -1,8 +1,9 @@
 import React from "react";
 
 const App = () => {
+
   return (
-    <div className="bg-customGray relative min-h-screen" style={{ paddingTop: "100px" }}>
+    <div className="bg-customGray relative min-h-screen md:w-1/2" style={{ paddingTop: "100px" }}>
       {/* Background Image */}
       <div className="absolute inset-0 flex items-center justify-center">
         <img
@@ -32,7 +33,7 @@ const App = () => {
         <div className="mb-0 text-center text-customGreen font-joystix_monospace p-0">
           <p className="text-xs">MONKEYS ARE DEAD</p>
         </div>
-        <div className="mb-24 text-center text-customGreen font-upheavtt p-0">
+        <div className="mb-0 text-center text-customGreen font-upheavtt p-0">
           <p className="text-md">LONG LIVE THE MONKIES</p>
         </div>
       </div>
