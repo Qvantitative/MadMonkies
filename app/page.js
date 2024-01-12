@@ -44,7 +44,7 @@ const Button = ({ text, link }) => {
       href={link}
       target="_blank"
       rel="noopener noreferrer"
-      className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-3 rounded-lg transition duration-300 block"
+      className="bg-customGreen hover:bg-customGreen text-center text-black font-bold px-6 py-3 squared-lg transition duration-300 block"
     >
       {text}
     </a>
