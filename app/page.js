@@ -2,7 +2,7 @@ import React from "react";
 
 const App = () => {
   return (
-    <div className="bg-customGray relative h-screen">
+    <div className="bg-customGray relative min-h-screen">
       <div className="absolute inset-0 flex items-center justify-center">
         {/* Background Image */}
         <img
@@ -28,7 +28,7 @@ const App = () => {
         </div>
 
         {/* Move the content to the bottom */}
-        <div className="h-24"></div>
+        <div className="h-36"></div>
         <div className="mb-0 text-center text-customGreen font-joystix_monospace p-0">
           <p className="text-xs">MONKEYS ARE DEAD</p>
         </div>
