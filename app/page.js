@@ -17,10 +17,10 @@ const App = () => {
         <img
           src="/LOGO.png" // Path to your logo image in the "public" folder
           alt="Logo"
-          className="h-32 w-64 mt-12 mb-48" // Adjusted mt-12 to move it higher
+          className="h-32 w-64 mt-24 mb-48" // Adjusted mt-12 to move it higher
         />
 
-        <div className="space-y-4 mt-4">
+        <div className="space-y-4 mt-0">
           <Button text="Discord" link="https://discord.gg/WKWDM9E6" />
           <Button text="Twitter" link="https://twitter.com/BtcMonkies" />
           <Button text="Monkies" link="https://magiceden.io/ordinals/marketplace/madmonkies" />
