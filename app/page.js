@@ -28,7 +28,7 @@ const App = () => {
         </div>
 
         {/* Move the content to the bottom */}
-        <div className="flex-grow mb-150px"></div>
+        <div className="h-16"></div>
         <div className="mb-0 text-center text-customGreen font-joystix_monospace p-0">
           <p className="text-xs">MONKEYS ARE DEAD</p>
         </div>
