@@ -29,7 +29,7 @@ const App = () => {
 
         {/* Move the content to the bottom */}
         <div className="flex-grow"></div>
-        <div className="mb-0 text-center text-customGreen p-2">
+        <div className="mb-0 text-center text-customGreen font-joystix_monospace p-2">
           <p className="text-md">MONKEYS ARE DEAD</p>
           <p className="text-md">LONG LIVE THE MONKIES</p>
         </div>
@@ -44,7 +44,7 @@ const Button = ({ text, link }) => {
       href={link}
       target="_blank"
       rel="noopener noreferrer"
-      className="bg-customGreen hover:bg-customGreen text-center text-black font-bold px-6 py-3 squared-lg transition duration-300 block"
+      className="bg-customGreen hover:bg-customGreen text-center text-xl text-black font-bold font-upheavtt px-6 py-3 squared-lg transition duration-300 block"
     >
       {text}
     </a>

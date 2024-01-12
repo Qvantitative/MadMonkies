@@ -11,6 +11,10 @@ module.exports = {
         customGray: '#222222', // Replace with your custom color code
         customGreen: '#d9fd93', // Replace with your custom color code
       },
+      fontFamily: {
+        'joystix_monospace': ['Joystix Monospace', 'monospace'],
+        'upheavtt': ['Upheavtt', 'sans'],
+      },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic':
