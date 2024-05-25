@@ -1,4 +1,4 @@
-// app/_document.js
+// pages/_document.js
 import Document, { Html, Head, Main, NextScript } from 'next/document';
 
 class MyDocument extends Document {
@@ -6,8 +6,8 @@ class MyDocument extends Document {
     return (
       <Html>
         <Head>
-          {/* Include the favicon from the app directory */}
-          <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+          {/* Include the favicon from the pages directory */}
+          <link rel="icon" href="/FACE_DRIP.png" type="image/x-icon" />
           {/* Add other meta tags or stylesheets here */}
         </Head>
         <body>
