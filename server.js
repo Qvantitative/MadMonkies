@@ -6,9 +6,9 @@ const cors = require('cors');
 const app = express();
 
 const corsOptions = {
-  origin: '*', // Allow requests from any origin (update if you have specific origins)
-  methods: 'GET,POST', // Allow GET and POST requests
-  optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
+  origin: '*', // Allow requests from any origin for debugging purposes
+  methods: 'GET,POST',
+  optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
@@ -16,6 +16,8 @@ app.use(express.json());
 
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
+  console.log('Headers:', req.headers);
+  console.log('Body:', req.body);
   next();
 });
 
@@ -37,13 +39,13 @@ app.post('/api/score-response', async (req, res) => {
 
     res.json({ response: completion.choices[0].message.content });
   } catch (error) {
-    console.error(error);
+    console.error('Error:', error);
     res.status(500).send('Something broke!');
   }
 });
 
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Error stack:', err.stack);
   res.status(500).send('Something broke!');
 });
 
