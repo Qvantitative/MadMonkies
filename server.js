@@ -6,20 +6,13 @@ const cors = require('cors');
 const app = express();
 
 const corsOptions = {
-  origin: '*', // Allow requests from any origin for debugging purposes
+  origin: '*', // Allow all origins for testing
   methods: 'GET,POST',
   optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
 app.use(express.json());
-
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
-  console.log('Headers:', req.headers);
-  console.log('Body:', req.body);
-  next();
-});
 
 app.post('/api/score-response', async (req, res) => {
   try {
@@ -44,10 +37,4 @@ app.post('/api/score-response', async (req, res) => {
   }
 });
 
-app.use((err, req, res, next) => {
-  console.error('Error stack:', err.stack);
-  res.status(500).send('Something broke!');
-});
-
-// Export the app as a module
 module.exports = app;
