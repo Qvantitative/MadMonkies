@@ -37,4 +37,5 @@ app.post('/api/score-response', async (req, res) => {
   }
 });
 
+// Export the app as a module
 module.exports = app;
