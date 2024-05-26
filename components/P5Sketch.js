@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import p5 from 'p5';
 
-const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShowSpeechBubble }) => {
+const P5Sketch = () => {
   const sketchRef = useRef();
-  const [aiResponseState, setAiResponseState] = useState(initialAiResponse);
-  const [showSpeechBubbleState, setShowSpeechBubbleState] = useState(initialShowSpeechBubble);
+  const [aiResponse, setAiResponse] = useState('');
+  const [showSpeechBubble, setShowSpeechBubble] = useState(false);
 
   useEffect(() => {
     const sketch = (p) => {
@@ -37,8 +37,8 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
         bullets = [];
         score = 0;
         gameOver = false;
-        setAiResponseState('');
-        setShowSpeechBubbleState(false);
+        setAiResponse('');
+        setShowSpeechBubble(false);
         for (let i = 0; i < 20; i++) {
           enemies.push(new Enemy());
         }
@@ -93,14 +93,14 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
         p.textSize(24);
         p.text(`Score: ${score}`, p.width / 2, 30);
 
-        if (showSpeechBubbleState) {
+        if (showSpeechBubble) {
           p.fill(0, 0, 0, 200);
           p.rectMode(p.CENTER);
           p.rect(p.width / 2, p.height / 2, 400, 200, 10);
           p.fill(255);
           p.textSize(16);
           p.textAlign(p.CENTER, p.CENTER);
-          p.text(aiResponseState, p.width / 2, p.height / 2);
+          p.text(aiResponse, p.width / 2, p.height / 2);
         }
       };
 
@@ -137,8 +137,8 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
         })
         .then(response => response.json())
         .then(data => {
-          setAiResponseState(data.response);
-          setShowSpeechBubbleState(true);
+          setAiResponse(data.response);
+          setShowSpeechBubble(true);
         })
         .catch(error => {
           console.error('Error:', error);
@@ -262,14 +262,14 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
 
     const p5Instance = new p5(sketch);
     return () => p5Instance.remove();
-  }, [aiResponseState, showSpeechBubbleState]);
+  }, []);
 
   return (
     <div style={{ position: 'relative', margin: 0, padding: 0 }}>
       <div ref={sketchRef} style={{ width: '100%', height: '100%' }} />
-      {showSpeechBubbleState && (
+      {showSpeechBubble && (
         <div className="speech-bubble" style={{ top: '50%', left: '50%', opacity: 1 }}>
-          {aiResponseState}
+          {aiResponse}
         </div>
       )}
     </div>
