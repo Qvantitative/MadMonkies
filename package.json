@@ -11,6 +11,7 @@
   "dependencies": {
     "@heroicons/react": "^2.1.1",
     "@micro-stacks/react": "^1.0.9",
+    "@next/eslint-plugin-next": "^14.2.3",
     "body-parser": "^1.20.2",
     "chart.js": "^4.4.3",
     "chartjs-chart-treemap": "^2.3.1",
@@ -24,7 +25,12 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.16",
-    "eslint": "^9.3.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.3",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-jsx-a11y": "^6.8.0",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.2",
     "postcss": "^8.4.33",
     "tailwindcss": "^3.4.1"
   }
