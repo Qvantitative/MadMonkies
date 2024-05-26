@@ -134,7 +134,7 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
       };
 
       const submitScore = (score) => {
-        fetch('http://localhost:3000/api/score-response', {
+        fetch('*/api/score-response', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

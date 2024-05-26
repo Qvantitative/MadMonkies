@@ -1,5 +1,4 @@
 require('dotenv').config();
-
 const express = require('express');
 const { OpenAI } = require('openai');
 const cors = require('cors');
@@ -7,7 +6,7 @@ const cors = require('cors');
 const app = express();
 
 const corsOptions = {
-  origin: 'http://localhost:3001', // Allow requests from this origin
+  origin: '*', // Allow requests from any origin (update if you have specific origins)
   methods: 'GET,POST', // Allow GET and POST requests
   optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
 };
@@ -48,6 +47,5 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something broke!');
 });
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
-});
+// Export the app as a module
+module.exports = app;
