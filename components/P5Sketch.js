@@ -5,7 +5,9 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
   const sketchRef = useRef();
   const [aiResponseState, setAiResponseState] = useState(initialAiResponse);
   const [showSpeechBubbleState, setShowSpeechBubbleState] = useState(initialShowSpeechBubble);
+  const RESPONSE_DISPLAY_DURATION = 5000; // Display duration in milliseconds
 
+  // Initialize P5 sketch
   useEffect(() => {
     const sketch = (p) => {
       let player;
@@ -89,7 +91,7 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
           if (enemy.hits(player)) {
             gameOver = true;
             p.noLoop();
-            submitScore(score);
+            submitScore(score); // Call submitScore when the game is over
           }
         }
 
@@ -143,6 +145,10 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
         .then(data => {
           setAiResponseState(data.response);
           setShowSpeechBubbleState(true);
+          // Hide the speech bubble after a delay
+          setTimeout(() => {
+            setShowSpeechBubbleState(false);
+          }, RESPONSE_DISPLAY_DURATION);
         })
         .catch(error => {
           console.error('Error:', error);
