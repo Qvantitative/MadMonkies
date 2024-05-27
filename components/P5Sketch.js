@@ -135,7 +135,7 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
 
       const submitScore = (score) => {
         const isLocal = window.location.hostname === 'localhost';
-        const url = isLocal ? 'http://localhost:3000/api/score-response' : 'https://mad-monkies-k31trwkqc-mad-monkies-45e37806.vercel.app/api/score-response';
+        const url = isLocal ? 'http://localhost:3000/api/score-response' : 'https://mad-monkies-qvantitative-mad-monkies-45e37806.vercel.app/api/score-response';
 
         fetch(url, {
           method: 'POST',
