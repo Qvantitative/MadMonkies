@@ -1,20 +1,16 @@
 require('dotenv').config();
-const express = require('express');
 const { OpenAI } = require('openai');
-const cors = require('cors');
 
-const app = express();
+module.exports = async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-const corsOptions = {
-  origin: '*', // Allow all origins for testing
-  methods: 'GET,POST',
-  optionsSuccessStatus: 200
-};
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
 
-app.use(cors(corsOptions));
-app.use(express.json());
-
-app.post('/api/score-response', async (req, res) => {
   try {
     const openai = new OpenAI({
       apiKey: process.env.TOKEN
@@ -35,7 +31,4 @@ app.post('/api/score-response', async (req, res) => {
     console.error('Error:', error);
     res.status(500).send('Something broke!');
   }
-});
-
-// Export the app as a module
-module.exports = app;
+};
