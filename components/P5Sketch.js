@@ -38,6 +38,7 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
       };
 
       const resetGame = () => {
+        console.log('Resetting game...');
         player = new Player();
         enemies = [];
         bullets = [];
@@ -111,6 +112,7 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
       };
 
       p.keyPressed = () => {
+        console.log('Key pressed:', p.keyCode);
         if (!gameStarted && p.keyCode === p.ENTER) {
           gameStarted = true;
         }
@@ -120,12 +122,14 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
       };
 
       p.mousePressed = () => {
+        console.log('Mouse pressed');
         if (gameStarted && !gameOver) {
           shootBurst();
         }
       };
 
       const shootBurst = () => {
+        console.log('Shooting burst');
         for (let i = 0; i < 3; i++) {
           setTimeout(() => {
             bullets.push(new Bullet(player.pos.x, player.pos.y));
@@ -137,6 +141,8 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
         const isLocal = window.location.hostname === 'localhost';
         const url = isLocal ? 'http://localhost:3000/api/score-response' : 'https://mad-monkies-qvantitative-mad-monkies-45e37806.vercel.app/api/score-response';
 
+        console.log("Submitting score to URL:", url);
+
         fetch(url, {
           method: 'POST',
           headers: {
@@ -146,6 +152,7 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
         })
         .then(response => response.json())
         .then(data => {
+          console.log("Response from server:", data);
           setAiResponseState(data.response);
           setShowSpeechBubbleState(true);
           // Hide the speech bubble after a delay
