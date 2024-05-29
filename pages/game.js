@@ -7,39 +7,30 @@ const P5Sketch = dynamic(() => import('../components/P5Sketch'), {
 });
 
 const Game = () => {
-
   return (
-    <div className="bg-customGray relative min-h-screen">
+    <div className="bg-black relative min-h-screen">
+      {/* Background Image */}
       <div className="absolute inset-0 flex items-center justify-center">
-        {/* Background Image */}
         <img
           src="/MAD.png" // Path to your image in the "public" folder
           alt="Background Image"
-          className="max-h-screen max-w-screen w-auto h-auto object-contain pointer-events-none"
+          className="w-full h-full object-cover pointer-events-none"
         />
       </div>
 
-      <div className="flex flex-col justify-start items-center min-h-screen relative">
-        {/* Logo (Adjusted margin-top for higher positioning) */}
+      <div className="flex flex-col justify-start items-center min-h-screen relative z-10">
+        {/* Logo */}
         <img
           src="/LOGO.png" // Path to your logo image in the "public" folder
           alt="Logo"
-          className="h-32 w-64 mt-24 mb-4" // Adjusted mt-12 to move it higher
+          className="h-24 w-48 sm:h-32 sm:w-64 mt-6 mb-4" // Responsive height and width
         />
 
-        <div className="mx-auto max-w text-center">
-            <div className="flex justify-center items-center h-screen bg-gray-900">
-                <P5Sketch />
-            </div>
-        </div>
-
-        {/* Move the content to the bottom */}
-        <div className="h-72"></div>
-        <div className="mb-0 text-center text-customGreen font-joystix_monospace p-0">
-          <p className="text-xs">MONKEYS ARE DEAD</p>
-        </div>
-        <div className="mb-0 text-center text-customGreen font-upheavtt p-0">
-          <p className="text-md">LONG LIVE THE MONKIES</p>
+        {/* Sketch Component */}
+        <div className="flex-grow flex items-center justify-center w-full px-2 sm:px-4">
+          <div className="w-full max-w-md h-auto">
+            <P5Sketch />
+          </div>
         </div>
       </div>
     </div>

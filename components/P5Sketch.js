@@ -23,11 +23,23 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
 
       p.preload = () => {
         try {
-          playerImg = p.loadImage('/capt.png');
-          for (let i = 1; i <= 10; i++) {
-            enemyImgs.push(p.loadImage(`/${i}.png`));
+          console.log('Loading player image from /images/capt1.png');
+          playerImg = p.loadImage('/images/capt1.png',
+            () => console.log('Player image loaded successfully'),
+            () => console.error('Failed to load player image'));
+
+          for (let i = 1; i <= 8; i++) {  // Adjusted to only load up to 8.png
+            const path = `/images/${i}.png`;
+            console.log(`Loading enemy image from ${path}`);
+            enemyImgs.push(p.loadImage(path,
+              () => console.log(`Enemy image ${i} loaded successfully`),
+              () => console.error(`Failed to load enemy image ${i}`)));
           }
-          backgroundImg = p.loadImage('/background.png');
+
+          console.log('Loading background image from /images/BG1.png');
+          backgroundImg = p.loadImage('/images/BG1.png',
+            () => console.log('Background image loaded successfully'),
+            () => console.error('Failed to load background image'));
         } catch (error) {
           console.error('Error loading images:', error);
         }
@@ -55,13 +67,17 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
       };
 
       p.draw = () => {
-        p.background(backgroundImg);
+        if (backgroundImg) {
+          p.background(backgroundImg);
+        } else {
+          p.background(0); // Default to black background if image fails to load
+        }
 
         if (!gameStarted) {
           p.fill(255);
           p.textSize(64);
           p.textAlign(p.CENTER);
-          p.text('Press ENTER to Start', p.width / 2, p.height / 2);
+          p.text('Press ENTER or TAP to Start', p.width / 2, p.height / 2);
           return;
         }
 
@@ -128,7 +144,22 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
 
       p.mousePressed = () => {
         console.log('Mouse pressed');
-        if (gameStarted && !gameOver) {
+        if (!gameStarted) {
+          gameStarted = true;
+        } else if (gameOver) {
+          resetGame();
+        } else {
+          shootBurst();
+        }
+      };
+
+      p.touchStarted = () => {
+        console.log('Touch started');
+        if (!gameStarted) {
+          gameStarted = true;
+        } else if (gameOver) {
+          resetGame();
+        } else {
           shootBurst();
         }
       };
@@ -291,10 +322,10 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
   }, []);
 
   return (
-    <div style={{ position: 'relative', margin: 0, padding: 0 }}>
-      <div ref={sketchRef} style={{ width: '100%', height: '100%' }} />
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150vh', backgroundColor: 'transparent' }}>
+      <div ref={sketchRef} style={{ width: '800px', height: '600px', backgroundColor: 'transparent' }} />
       {showSpeechBubbleState && (
-        <div className="speech-bubble" style={{ top: '50%', left: '50%', opacity: 1 }}>
+        <div className="speech-bubble" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', opacity: 1 }}>
           {aiResponseState}
         </div>
       )}

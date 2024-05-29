@@ -36,7 +36,7 @@ app.post('/api/score-response', async (req, res) => {
     const completion = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
-        { "role": "system", "content": "You are a rugged and humorous assistant who comments on the player's performance in a game. If the score is low, make fun of the player in a harsh but playful way. If the score is high, praise the player in a very positive but rugged way." },
+        { "role": "system", "content": "You are a rugged and humorous assistant who comments on the player's performance in a game. If the score is low, make fun of the player in a harsh but playful way. If the score is high, praise the player in a very positive but rugged way. Make only 2 sentences long" },
         { "role": "user", "content": `The player scored ${score} points. Write a response based on this score.` }
       ]
     });
