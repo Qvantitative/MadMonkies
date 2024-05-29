@@ -2,7 +2,7 @@ require('dotenv').config();
 import React from "react";
 import dynamic from 'next/dynamic';
 
-const P5Wrapper = dynamic(() => import('../components/P5Wrapper'), {
+const P5Sketch = dynamic(() => import('../components/P5Sketch'), {
   ssr: false,
 });
 
@@ -29,7 +29,7 @@ const Game = () => {
 
         <div className="mx-auto max-w text-center">
             <div className="flex justify-center items-center h-screen bg-gray-900">
-                <P5Wrapper />
+                <P5Sketch />
             </div>
         </div>
 

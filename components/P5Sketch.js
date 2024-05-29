@@ -6,6 +6,7 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
   const [aiResponseState, setAiResponseState] = useState(initialAiResponse);
   const [showSpeechBubbleState, setShowSpeechBubbleState] = useState(initialShowSpeechBubble);
   const RESPONSE_DISPLAY_DURATION = 5000; // Display duration in milliseconds
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
 
   // Initialize P5 sketch
   useEffect(() => {
@@ -44,6 +45,7 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
         bullets = [];
         score = 0;
         gameOver = false;
+        setScoreSubmitted(false); // Reset the flag when the game is reset
         setAiResponseState('');
         setShowSpeechBubbleState(false);
         for (let i = 0; i < 20; i++) {
@@ -91,8 +93,11 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
         for (let enemy of enemies) {
           if (enemy.hits(player)) {
             gameOver = true;
+            if (!scoreSubmitted) {
+              setScoreSubmitted(true); // Ensure it's only called once
+              submitScore(score); // Call submitScore when the game is over
+            }
             p.noLoop();
-            submitScore(score); // Call submitScore when the game is over
           }
         }
 
@@ -138,6 +143,7 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
       };
 
       const submitScore = (score) => {
+        console.log("submitScore called");
         const isLocal = window.location.hostname === 'localhost';
         const url = isLocal ? 'http://localhost:3000/api/score-response' : 'https://mad-monkies-qvantitative-mad-monkies-45e37806.vercel.app/api/score-response';
 
