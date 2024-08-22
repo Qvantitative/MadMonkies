@@ -1,11 +1,13 @@
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') }); // Adjust the path as needed
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const { OpenAI } = require('openai');
 const express = require('express');
 
 const app = express();
 app.use(express.json());
+
+const leaderboard = [];
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -20,19 +22,11 @@ app.use((req, res, next) => {
 
 app.post('/api/score-response', async (req, res) => {
   try {
-    console.log('API Key:', process.env.TOKEN); // Log the API key to ensure it is being loaded correctly (remove this in production)
-
-    if (!process.env.TOKEN) {
-      throw new Error('API Key is missing');
-    }
-
     const openai = new OpenAI({
-      apiKey: process.env.TOKEN // Ensure this is properly set in your .env file
+      apiKey: process.env.TOKEN
     });
 
     const score = req.body.score;
-    console.log('Score received:', score); // Log the score to ensure it's being received
-
     const completion = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
@@ -46,6 +40,17 @@ app.post('/api/score-response', async (req, res) => {
     console.error('Error:', error.message);
     res.status(500).json({ error: error.message });
   }
+});
+
+app.post('/api/leaderboard', (req, res) => {
+  const { name, score } = req.body;
+  leaderboard.push({ name, score });
+  leaderboard.sort((a, b) => b.score - a.score); // Sort descending by score
+  res.status(200).json({ message: 'Score submitted successfully' });
+});
+
+app.get('/api/leaderboard', (req, res) => {
+  res.json(leaderboard);
 });
 
 const port = process.env.PORT || 3000;

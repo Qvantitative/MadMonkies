@@ -20,7 +20,7 @@ const Index = () => {
         />
 
         <div className="space-y-4 mt-0">
-          <Button text="Discord" link="https://discord.gg/WKWDM9E6" />
+          <Button text="Discord" link="https://discord.gg/madmonkies" />
           <Button text="Twitter" link="https://twitter.com/BtcMonkies" />
           <Button text="Monkies" link="https://magiceden.io/ordinals/marketplace/madmonkies" />
           <Button text="Resident Passes" link="https://magiceden.io/ordinals/marketplace/residentpass" />

@@ -49,7 +49,7 @@ body {
   position: absolute;
   width: 300px;
   padding: 20px;
-  background-color: rgba(0, 0, 0, 0.75); /* Semi-transparent background */
+  background-color: rgba(0, 0, 0, 0.75);
   border: 2px solid #fff;
   border-radius: 10px;
   font-size: 16px;
@@ -59,13 +59,13 @@ body {
   transform: translate(-50%, -50%);
   z-index: 10;
   transition: opacity 1s ease-in-out;
-  opacity: 0; /* Start hidden */
+  opacity: 0;
 }
 
 .speech-bubble:after {
   content: '';
   position: absolute;
-  bottom: -20px; /* Adjust to align with the bubble */
+  bottom: -20px;
   left: 50%;
   transform: translateX(-50%);
   border-width: 10px;
@@ -77,7 +77,7 @@ body {
   position: absolute;
   width: 150px;
   padding: 10px;
-  background-color: rgba(0, 0, 0, 0.75); /* Semi-transparent background */
+  background-color: rgba(0, 0, 0, 0.75);
   border: 2px solid #fff;
   border-radius: 10px;
   font-size: 12px;
@@ -92,7 +92,7 @@ body {
 .enemy-speech-bubble:after {
   content: '';
   position: absolute;
-  bottom: -10px; /* Adjust to align with the bubble */
+  bottom: -10px;
   left: 50%;
   transform: translateX(-50%);
   border-width: 10px;
@@ -107,4 +107,44 @@ canvas {
   background: none;
 }
 
+.controls-container {
+  margin-right: 20px;
+}
 
+.controls-image {
+  width: 100px;
+  height: auto;
+}
+
+.lives-display {
+  position: absolute;
+  left: 0;
+  bottom: -40px;
+  display: flex;
+  align-items: center;
+  margin-left: 16px;
+}
+
+.leaderboard {
+  max-width: 300px;
+  background-color: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: black;
+}
+
+.leaderboard h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.leaderboard ul {
+  list-style: none;
+  padding: 0;
+}
+
+.leaderboard li {
+  margin-bottom: 0.5rem;
+}
