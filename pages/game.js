@@ -48,7 +48,7 @@ const Game = () => {
 
           {/* Leaderboard */}
           <div className="leaderboard-container absolute right-0 top-1/2 transform -translate-y-1/2">
-            <Leaderboard />
+
           </div>
         </div>
 

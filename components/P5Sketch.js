@@ -297,19 +297,19 @@ const submitScore = (score, gameId) => {
 
         let availableEnemyTypes = [3, 4]; // Initial enemy types (4.png and 5.png)
 
-        if (score >= 750) {
+        if (score >= 50) {
           availableEnemyTypes = availableEnemyTypes.concat([0, 1]); // Add 1.png and 2.png
         }
-        if (score >= 1500) {
+        if (score >= 100) {
           availableEnemyTypes = availableEnemyTypes.concat([2]); // Add 3.png
         }
-        if (score >= 2000) {
+        if (score >= 150) {
           availableEnemyTypes = availableEnemyTypes.concat([6]); // Add 7.png
         }
-        if (score >= 2500) {
+        if (score >= 200) {
           availableEnemyTypes = availableEnemyTypes.concat([7]); // Add 8.png
         }
-        if (score >= 3000) {
+        if (score >= 250) {
           availableEnemyTypes = availableEnemyTypes.concat([4]); // Add 5.png again
         }
 
