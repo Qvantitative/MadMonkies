@@ -25,7 +25,7 @@ const Index = () => {
           <Button text="Monkies" link="https://magiceden.io/ordinals/marketplace/madmonkies" />
           <Button text="Resident Passes" link="https://magiceden.io/ordinals/marketplace/residentpass" />
           <Button text="Game" link="/game" /> {/* Updated link to internal route */}
-          <Button text="3D Models" link="/3dm" /> {/* Updated link to internal route */}
+          {/* <Button text="3D Models" link="/3dm" />e */}
         </div>
 
         <div className="h-72"></div>

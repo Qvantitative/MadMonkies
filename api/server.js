@@ -1,59 +1,57 @@
+const express = require('express');
+const next = require('next');
 const path = require('path');
+const cors = require('cors');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
-const { OpenAI } = require('openai');
-const express = require('express');
+const dev = process.env.NODE_ENV !== 'production';
+const app = next({ dev });
+const handle = app.getRequestHandler();
 
-const app = express();
-app.use(express.json());
+const allowedOrigins = ['http://localhost:3000', 'https://madmonki.es', 'https://www.madmonki.es'];
 
-const leaderboard = [];
+const corsOptions = {
+  origin: ['http://localhost:3000', 'https://madmonki.es'],
+  methods: ['GET', 'POST'],
+  credentials: true,
+  optionsSuccessStatus: 204
+};
 
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-  next();
-});
+server.options('*', cors(corsOptions));
 
-app.post('/api/score-response', async (req, res) => {
-  try {
-    const openai = new OpenAI({
-      apiKey: process.env.TOKEN
-    });
+app.prepare().then(() => {
+  const server = express();
 
-    const score = req.body.score;
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [
-        { "role": "system", "content": "You are a rugged and humorous assistant who comments on the player's performance in a game. If the score is low, make fun of the player in a harsh but playful way. If the score is high, praise the player in a very positive but rugged way. Make only 2 sentences long" },
-        { "role": "user", "content": `The player scored ${score} points. Write a response based on this score.` }
-      ]
-    });
+  server.use(express.json());
+  server.use(cors(corsOptions));
 
-    res.json({ response: completion.choices[0].message.content });
-  } catch (error) {
-    console.error('Error:', error.message);
-    res.status(500).json({ error: error.message });
-  }
-});
+  // API routes
+  server.get('/api/leaderboard', (req, res) => {
+    // Your leaderboard logic here
+    res.json([/* your leaderboard data */]);
+  });
 
-app.post('/api/leaderboard', (req, res) => {
-  const { name, score } = req.body;
-  leaderboard.push({ name, score });
-  leaderboard.sort((a, b) => b.score - a.score); // Sort descending by score
-  res.status(200).json({ message: 'Score submitted successfully' });
-});
+  server.post('/api/submit-score', (req, res) => {
+    // Your score submission logic here
+    res.json({ success: true });
+  });
 
-app.get('/api/leaderboard', (req, res) => {
-  res.json(leaderboard);
-});
+  server.post('/api/score-response', (req, res) => {
+    // Your AI response generation logic here
+    res.json({ response: "AI generated response" });
+  });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  // Next.js request handling
+  server.all('*', (req, res) => {
+    return handle(req, res);
+  });
+
+  const port = process.env.PORT || 3000;
+  server.listen(port, (err) => {
+    if (err) throw err;
+    console.log(`> Ready on http://localhost:${port}`);
+  });
+}).catch((ex) => {
+  console.error(ex.stack);
+  process.exit(1);
 });

@@ -1,25 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
-const Leaderboard = () => {
-  const [scores, setScores] = useState([]);
-
-  useEffect(() => {
-    fetch('/api/leaderboard')
-      .then(response => response.json())
-      .then(data => setScores(data))
-      .catch(error => console.error('Error fetching leaderboard:', error));
-  }, []);
+const Leaderboard = ({ leaderboard }) => {
+  console.log("Leaderboard component received leaderboard:", leaderboard);
 
   return (
-    <div className="leaderboard bg-white p-4 rounded-lg shadow-lg text-black">
-      <h2 className="text-2xl font-bold mb-4">Leaderboard</h2>
-      <ul>
-        {scores.map((score, index) => (
-          <li key={index} className="mb-2">
-            <span className="font-semibold">{score.name}</span>: {score.score}
-          </li>
-        ))}
-      </ul>
+    <div className="leaderboard bg-transparent p-4 rounded-lg shadow-md">
+      <h2 className="text-white text-lg mb-4">Leaderboard</h2>
+      {leaderboard.length > 0 ? (
+        <ul className="text-white">
+          {leaderboard.map((entry, index) => (
+            <li key={index}>
+              <strong>{entry.name}:</strong> {entry.score}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-white">No scores yet.</p>
+      )}
     </div>
   );
 };

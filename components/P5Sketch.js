@@ -1,14 +1,43 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useMemo, useEffect, useRef, useState, useCallback } from 'react';
 import p5 from 'p5';
 
-const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShowSpeechBubble, updateLives }) => {
+const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShowSpeechBubble, updateLives, handleGameOver }) => {
   const sketchRef = useRef();
-  const [aiResponseState, setAiResponseState] = useState(initialAiResponse);
   const [showSpeechBubbleState, setShowSpeechBubbleState] = useState(initialShowSpeechBubble);
   const [lastGeneratedResponse, setLastGeneratedResponse] = useState('');
+  const [isGameOverScreenVisible, setIsGameOverScreenVisible] = useState(false);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const [showNameModal, setShowNameModal] = useState(false);
   const RESPONSE_DISPLAY_DURATION = 5000; // Display duration in milliseconds
-  const SCORE_MILESTONES = [100, 200, 300, 400, 500]; // Define your score milestones
+  const SCORE_MILESTONES = useMemo(() => [100, 200, 300, 400, 500], []);
+
+  const submitScore = useCallback(async (score, gameId) => {
+    try {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ||
+        (process.env.NODE_ENV === 'development'
+          ? 'http://localhost:3000/api'
+          : 'https://madmonki.es/api');
+
+      const response = await fetch(`${API_BASE_URL}/submit-score`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ score, gameId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Score submitted successfully', data);
+      return data;
+    } catch (error) {
+      console.error('Error submitting score:', error.message);
+      throw error;
+    }
+  }, []);
 
   useEffect(() => {
     const sketch = (p) => {
@@ -18,23 +47,24 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
       let enemyDeathImg;
       let backgroundImg;
       let bulletImg;
-      let serumImg; // Declare serum image
+      let serumImg;
       let enemies = [];
       let bullets = [];
-      let serums = []; // Array to hold serums
+      let lasers = []; // Global array for lasers
+      let serums = [];
       let score = 0;
-      let lives = 3; // Player starts with three lives
+      let lives = 3;
       let gameStarted = false;
       let gameOver = false;
       let currentGameId = null;
       let spawnTimer = 0;
-      let laserImg; // Declare laser image
-      let enemySpeedFactor = 0.5; // Initial enemy speed factor (50% slower)
-      let lastShotTime = 0; // Track the last time the player shot
-      const shootCooldown = 167; // Cooldown time in milliseconds (3x faster shooting rate)
-      const spawnInterval = 100; // Spawn a new row of enemies every 100 frames
-      let redFlash = false; // Flag for red flash effect
-      let redFlashTimer = 0; // Timer for red flash effect
+      let laserImg;
+      let enemySpeedFactor = 0.5;
+      let lastShotTime = 0;
+      const shootCooldown = 167;
+      const spawnInterval = 100;
+      let redFlash = false;
+      let redFlashTimer = 0;
 
       p.preload = () => {
         try {
@@ -45,8 +75,8 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
           enemyDeathImg = p.loadImage('/images/EDEATH.gif');
           backgroundImg = p.loadImage('/images/BG1.png');
           bulletImg = p.loadImage('/images/BULLET.png');
-          serumImg = p.loadImage('/images/serum.png'); // Preload serum image
-          laserImg = p.loadImage('/images/LASER.png'); // Preload laser image
+          serumImg = p.loadImage('/images/serum.png');
+          laserImg = p.loadImage('/images/LASER.png');
         } catch (error) {
           console.error('Error loading images:', error);
         }
@@ -54,7 +84,8 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
 
       p.setup = () => {
         p.createCanvas(800, 600).parent(sketchRef.current);
-        resetGame();
+        p.noLoop(); // Start the game loop stopped
+        currentGameId = new Date().getTime();
       };
 
       const resetGame = () => {
@@ -62,21 +93,24 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
         player = new Player();
         enemies = [];
         bullets = [];
-        serums = []; // Reset serums
+        lasers = []; // Reset lasers
+        serums = [];
         score = 0;
-        lives = 3; // Reset lives to 3
-        updateLives(lives); // Update lives in parent component
-        enemySpeedFactor = 0.5; // Reset speed factor
+        lives = 3;
+        updateLives(lives);
+        enemySpeedFactor = 0.5;
         gameOver = false;
         setScoreSubmitted(false);
-        setAiResponseState('');
-        setLastGeneratedResponse(''); // Clear last generated response
+        setLastGeneratedResponse('');
         setShowSpeechBubbleState(false);
-        spawnTimer = 0; // Reset spawn timer
-        lastShotTime = 0; // Reset last shot time
-        redFlash = false; // Reset red flash flag
+        spawnTimer = 0;
+        lastShotTime = 0;
+        redFlash = false;
+        setIsGameOverScreenVisible(false);
         p.loop();
       };
+
+      let nextExtraLifeScore = 1500; // Track the next score milestone for an extra life
 
       p.draw = () => {
         if (backgroundImg) {
@@ -86,7 +120,7 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
         }
 
         if (redFlash) {
-          p.fill(255, 0, 0, 100); // Red color with transparency
+          p.fill(255, 0, 0, 100);
           p.rect(0, 0, p.width, p.height);
           redFlashTimer--;
           if (redFlashTimer <= 0) {
@@ -102,55 +136,52 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
           return;
         }
 
+        if (gameOver) {
+          if (!scoreSubmitted) {
+            setScoreSubmitted(true);
+            submitScore(score, currentGameId);
+            handleGameOver(score);  // Call the parent's handleGameOver function
+            setIsGameOverScreenVisible(true);
+          }
+          p.noLoop(); // Stop the game loop
+          return;
+        }
+
         player.update();
         player.show();
 
-        for (let bullet of bullets) {
+        bullets.forEach(bullet => {
           bullet.update();
           bullet.show();
-        }
+        });
 
-        for (let enemy of enemies) {
-          enemy.update(player); // Pass the player to the enemy update method
+        enemies.forEach(enemy => {
+          enemy.update(player);
           enemy.show();
-        }
+        });
 
-        for (let serum of serums) {
+        serums.forEach((serum, i) => {
           serum.update();
           serum.show();
           if (serum.hits(player)) {
-            lives++; // Player gains an extra life
-            updateLives(lives); // Update lives in parent component
-            serums.splice(serums.indexOf(serum), 1); // Remove the collected serum
+            lives++;
+            updateLives(lives);
+            serums.splice(i, 1);
           }
-        }
+        });
 
-        for (let i = bullets.length - 1; i >= 0; i--) {
-          for (let j = enemies.length - 1; j >= 0; j--) {
-            if (bullets[i].hits(enemies[j]) && !enemies[j].isDying) {
-              enemies[j].triggerDeath(); // Trigger the enemy's death animation
-              bullets.splice(i, 1); // Remove the bullet that hit the enemy
-              score += 10;
-              if (score % 1000 === 0) {
-                enemySpeedFactor *= 1.25; // Increase speed by 15% for every 1000 points
-              }
-              if (score % 1500 === 0) {
-                spawnSerum(); // Spawn a serum every 1500 points
-              }
-              checkScoreMilestones(score);
-              break;
-            }
-          }
-        }
-
-        for (let enemy of enemies) {
-          if (enemy.hits(player)) {
-            redFlash = true; // Trigger red flash effect
-            redFlashTimer = 10; // Duration of the red flash effect
+        lasers.forEach((laser, i) => {
+          laser.update();
+          laser.show();
+          if (laser.offScreen()) {
+            lasers.splice(i, 1);
+          } else if (laser.hits(player)) {
+            redFlash = true;
+            redFlashTimer = 10;
             if (lives > 1) {
-              lives--; // Use a life
-              updateLives(lives); // Update lives in parent component
-              enemies.splice(enemies.indexOf(enemy), 1); // Remove the enemy that hit the player
+              lives--;
+              updateLives(lives);
+              lasers.splice(i, 1);
             } else {
               gameOver = true;
               if (!scoreSubmitted) {
@@ -160,43 +191,87 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
               p.noLoop();
             }
           }
-        }
+        });
+
+        bullets = bullets.filter(bullet => {
+          for (let i = enemies.length - 1; i >= 0; i--) {
+            if (bullet.hits(enemies[i]) && !enemies[i].isDying) {
+              enemies[i].triggerDeath();
+              score += 10;
+              if (score % 1000 === 0) {
+                enemySpeedFactor *= 1.25;
+              }
+
+              // Check for extra life at 1500, then every 500 points after that
+              if (score >= nextExtraLifeScore) {
+                lives++;
+                updateLives(lives);
+                nextExtraLifeScore += 500; // Set the next milestone to 500 points after the current one
+              }
+
+              checkScoreMilestones(score);
+              return false;
+            }
+          }
+          return true;
+        });
+
+        enemies = enemies.filter(enemy => {
+          if (enemy.hits(player)) {
+            redFlash = true;
+            redFlashTimer = 10;
+            if (lives > 0) {
+              lives--;
+              updateLives(lives);
+            }
+
+            if (lives === 0) {
+              gameOver = true;
+            }
+            return false;
+          }
+          return !enemy.isDead;
+        });
 
         p.fill(255);
         p.textSize(24);
         p.text(`Score: ${score}`, p.width / 2, 30);
-        p.text(`Lives: ${lives}`, p.width - 100, 30); // Display lives
+        p.text(`Lives: ${lives}`, p.width - 100, 30);
 
         spawnTimer++;
         if (spawnTimer >= spawnInterval) {
           spawnEnemies();
           spawnTimer = 0;
         }
-
-        // Filter out enemies that are off-screen or dead
-        enemies = enemies.filter(enemy => enemy.pos.y <= p.height + 50 && !enemy.isDead);
       };
 
-
       p.keyPressed = () => {
-        if (!gameStarted && p.keyCode === p.ENTER) {
+        if (!gameStarted && !gameOver && p.keyCode === p.ENTER) {
+          console.log("Starting game...");
           gameStarted = true;
-        }
-        if (gameOver && p.keyCode === p.ENTER) {
+          player = new Player();
           resetGame();
         }
-        if (p.keyCode === 87 || p.keyCode === p.UP_ARROW) { // 'W' key or 'UP_ARROW'
-          shoot();
+
+        if (gameOver && isGameOverScreenVisible && p.keyCode === p.ENTER) {
+          console.log("Starting a new game after game over...");
+          resetGame();
+        }
+
+        if (gameStarted && player && player.pos) {
+          if (p.keyCode === 87 || p.keyCode === p.UP_ARROW) {
+            shoot();
+          }
+        } else {
+          console.error("Cannot shoot: Game hasn't started or player isn't ready.");
         }
       };
 
       p.touchStarted = () => {
-        if (!gameStarted) {
-          gameStarted = true;
-        } else if (gameOver) {
-          resetGame();
-        } else {
+        if (gameStarted && player && player.pos) {
           shoot();
+        } else {
+          console.error("Cannot shoot: Game hasn't started or player isn't ready.");
         }
       };
 
@@ -204,13 +279,12 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
         if (gameStarted) {
           player.pos.x = p.mouseX;
         }
-        return false; // Prevent default
+        return false;
       };
 
       const shoot = () => {
         const currentTime = p.millis();
-        if (currentTime - lastShotTime >= shootCooldown) {
-          // Adjust the bullet start position to be in front of the player
+        if (gameStarted && player && player.pos && currentTime - lastShotTime >= shootCooldown) {
           bullets.push(new Bullet(player.pos.x, player.pos.y - 35));
           lastShotTime = currentTime;
         }
@@ -224,7 +298,7 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
 
       const generateAiResponse = (score, gameId) => {
         const isLocal = window.location.hostname === 'localhost';
-        const url = isLocal ? 'http://localhost:3000/api/score-response' : 'https://mad-monkies-qvantitative-mad-monkies-45e37806.vercel.app/api/score-response';
+        const url = isLocal ? process.env.NEXT_PUBLIC_DEVELOPMENT_API_URL : process.env.NEXT_PUBLIC_PRODUCTION_API_URL;
 
         fetch(url, {
           method: 'POST',
@@ -233,96 +307,66 @@ const P5Sketch = ({ aiResponse: initialAiResponse, showSpeechBubble: initialShow
           },
           body: JSON.stringify({ score }),
         })
-        .then(response => response.json())
-        .then(data => {
-          if (gameId === currentGameId) { // Ensure response is not shown if a new game has started
-            if (gameOver) { // Only show the speech bubble if the game is over
-              setLastGeneratedResponse(data.response);
-              setAiResponseState(data.response);
-              setShowSpeechBubbleState(true);
-              setTimeout(() => {
-                setShowSpeechBubbleState(false);
-              }, RESPONSE_DISPLAY_DURATION);
+          .then(response => response.json())
+          .then(data => {
+            if (gameId === currentGameId) {
+              if (gameOver) {
+                setLastGeneratedResponse(data.response);
+                setShowSpeechBubbleState(true);
+                setTimeout(() => {
+                  setShowSpeechBubbleState(false);
+                }, RESPONSE_DISPLAY_DURATION);
+              }
             }
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-        });
+          })
+          .catch(error => {
+            console.error('Error:', error);
+          });
       };
 
-// ... other code ...
-
-const submitScore = (score, gameId) => {
-  const isLocal = window.location.hostname === 'localhost';
-  const url = isLocal ? 'http://localhost:3000/api/score-response' : 'https://your-vercel-deployment-url/api/score-response';
-
-  fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ score }),
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (gameId === currentGameId) {
-      if (gameOver) {
-        setAiResponseState(data.response);
-        setShowSpeechBubbleState(true);
-        setTimeout(() => {
-          setShowSpeechBubbleState(false);
-        }, RESPONSE_DISPLAY_DURATION);
-      }
-    }
-  })
-  .catch(error => {
-    console.error('Error:', error);
-  });
-
-  fetch('/api/leaderboard', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: 'Player', score }),
-  });
-};
+      const MAX_ENEMIES = 15;
 
       const spawnEnemies = () => {
-        let cols = 10; // Number of columns
+        if (enemies.length >= MAX_ENEMIES) {
+          return; // Don't spawn new enemies if we've reached the limit
+        }
+
+        let cols = 10;
         let enemyWidth = 50;
         let enemyHeight = 50;
-        let spacingX = (p.width - cols * enemyWidth) / (cols + 1); // Ensure spacing covers entire width
-        let y = -enemyHeight / 2; // Start above the screen
-        let enemiesPerRow = p.floor(p.random(3, 6)); // Random number of enemies per row
+        let spacingX = (p.width - cols * enemyWidth) / (cols + 1);
+        let y = -enemyHeight / 2;
+        let enemiesPerRow = p.floor(p.random(3, 6));
+        enemiesPerRow = Math.min(enemiesPerRow, MAX_ENEMIES - enemies.length);
 
-        let availableEnemyTypes = [3, 4]; // Initial enemy types (4.png and 5.png)
+        let availableEnemyTypes = [3, 4];
 
         if (score >= 50) {
-          availableEnemyTypes = availableEnemyTypes.concat([0, 1]); // Add 1.png and 2.png
+          availableEnemyTypes = availableEnemyTypes.concat([0, 1]);
         }
         if (score >= 100) {
-          availableEnemyTypes = availableEnemyTypes.concat([2]); // Add 3.png
+          availableEnemyTypes = availableEnemyTypes.concat([2]);
         }
         if (score >= 150) {
-          availableEnemyTypes = availableEnemyTypes.concat([6]); // Add 7.png
+          availableEnemyTypes = availableEnemyTypes.concat([6]);
         }
         if (score >= 200) {
-          availableEnemyTypes = availableEnemyTypes.concat([7]); // Add 8.png
+          availableEnemyTypes = availableEnemyTypes.concat([7]);
         }
         if (score >= 250) {
-          availableEnemyTypes = availableEnemyTypes.concat([4]); // Add 5.png again
+          availableEnemyTypes = availableEnemyTypes.concat([4]);
         }
 
         let placedColumns = [];
         for (let i = 0; i < enemiesPerRow; i++) {
           let col;
           do {
-            col = p.floor(p.random(cols)); // Randomly choose a column
-          } while (placedColumns.includes(col)); // Ensure no duplicate columns in the same row
+            col = p.floor(p.random(cols));
+          } while (placedColumns.includes(col));
 
           placedColumns.push(col);
           let x = spacingX + col * (enemyWidth + spacingX) + (enemyWidth / 2);
-          let enemyType = p.random(availableEnemyTypes); // Randomly choose an available enemy type
+          let enemyType = p.random(availableEnemyTypes);
 
           enemies.push(new Enemy(x, y, enemyType));
         }
@@ -330,7 +374,7 @@ const submitScore = (score, gameId) => {
 
       const spawnSerum = () => {
         const x = p.random(50, p.width - 50);
-        const y = -50; // Start above the screen
+        const y = -50;
         serums.push(new Serum(x, y));
       };
 
@@ -363,7 +407,7 @@ const submitScore = (score, gameId) => {
           p.push();
           p.translate(this.pos.x, this.pos.y);
           p.imageMode(p.CENTER);
-          p.image(playerImg, 0, 0, 36, 69); // Reduced size to 36x69
+          p.image(playerImg, 0, 0, 36, 69);
           p.pop();
         }
       }
@@ -385,7 +429,7 @@ const submitScore = (score, gameId) => {
           p.translate(this.pos.x, this.pos.y);
           p.rotate(this.angle);
           p.imageMode(p.CENTER);
-          p.image(bulletImg, 0, 0, 10, 5); // Adjust size as necessary
+          p.image(bulletImg, 0, 0, 10, 5);
           p.pop();
         }
 
@@ -399,12 +443,12 @@ const submitScore = (score, gameId) => {
         constructor(x, y, speed) {
           this.pos = p.createVector(x, y);
           this.speed = speed;
-          this.active = true; // Laser is active when created
+          this.active = true;
         }
 
         update() {
           if (this.active) {
-            this.pos.y += this.speed; // Move downwards
+            this.pos.y += this.speed;
           }
         }
 
@@ -413,7 +457,7 @@ const submitScore = (score, gameId) => {
             p.push();
             p.translate(this.pos.x, this.pos.y);
             p.imageMode(p.CENTER);
-            p.image(laserImg, 0, 0, 48, 9); // Adjust size as necessary
+            p.image(laserImg, 0, 0, 48, 9);
             p.pop();
           }
         }
@@ -425,81 +469,76 @@ const submitScore = (score, gameId) => {
         hits(player) {
           if (this.active) {
             let d = p.dist(this.pos.x, this.pos.y, player.pos.x, player.pos.y);
-            return d < 20; // Adjust collision radius as necessary
+            return d < 20;
           }
           return false;
         }
 
         deactivate() {
-          this.active = false; // Deactivate the laser
+          this.active = false;
         }
       }
 
       class Serum {
         constructor(x, y) {
           this.pos = p.createVector(x, y);
-          this.speed = 2; // Speed of the serum
+          this.speed = 2;
         }
 
         update() {
-          this.pos.y += this.speed; // Move downwards
+          this.pos.y += this.speed;
         }
 
         show() {
           p.push();
           p.translate(this.pos.x, this.pos.y);
           p.imageMode(p.CENTER);
-          p.image(serumImg, 0, 0, 24, 35); // Adjust size as necessary
+          p.image(serumImg, 0, 0, 24, 35);
           p.pop();
         }
 
         hits(player) {
           let d = p.dist(this.pos.x, this.pos.y, player.pos.x, player.pos.y);
-          return d < 20; // Adjust collision radius as necessary
+          return d < 20;
         }
       }
 
       class Enemy {
         constructor(x, y, type) {
           this.pos = p.createVector(x, y);
-          this.baseSpeed = 2; // Base speed for enemies
-          this.speed = this.baseSpeed * enemySpeedFactor; // Adjust speed based on the enemySpeedFactor
-          this.type = type; // Store the type
-          this.img = enemyImgs[type]; // Use the provided type to select the image
-          this.deathAnimationFrames = 10; // Set the number of frames for the death animation
+          this.baseSpeed = 2;
+          this.speed = this.baseSpeed * enemySpeedFactor;
+          this.type = type;
+          this.img = enemyImgs[type];
+          this.deathAnimationFrames = 10;
           this.isDying = false;
           this.deathFrameCount = 0;
-          this.isDead = false; // Add an isDead flag
-          this.homingTypes = [1, 5, 7]; // Indices for 2.png, 6.png, and 8.png (adjust as necessary)
-          this.lasers = []; // Array to hold lasers
-          this.movementDirection = p.random() > 0.5 ? 1 : -1; // Random initial direction for 1.png
-          this.moveCounter = 0; // Counter for controlling movement interval
+          this.isDead = false;
+          this.homingTypes = [1, 5, 7];
+          this.movementDirection = p.random() > 0.5 ? 1 : -1;
+          this.moveCounter = 0;
 
-          // Adjust speed for specific enemy types
-          if (type === 5) { // Assuming 6.png is at index 5
-            this.speed *= 1.25; // 25% faster
-          } else if (type === 7) { // Assuming 8.png is at index 7
-            this.speed *= 0.75; // 25% slower
-          } else if (type === 1) { // Assuming 2.png is at index 1
-            this.speed *= 1.25; // 25% faster
+          if (type === 5) {
+            this.speed *= 1.25;
+          } else if (type === 7) {
+            this.speed *= 0.75;
+          } else if (type === 1) {
+            this.speed *= 1.25;
           }
 
-          // Special movement logic for 2.png
-          if (type === 1) { // Assuming 2.png is at index 1
+          if (type === 1) {
             this.moveRight = true;
             this.moveCounter = 0;
           }
 
-          // Shooting variables for 7.png
-          if (type === 6) { // Assuming 7.png is at index 6
-            this.shootInterval = p.floor(p.random(80, 120)); // Interval between shots, randomized
-            this.shootTimer = p.floor(p.random(0, this.shootInterval)); // Start with a random timer value
+          if (type === 6) {
+            this.shootInterval = p.floor(p.random(80, 120));
+            this.shootTimer = p.floor(p.random(0, this.shootInterval));
           }
 
-          // Movement interval for 3.png
-          if (type === 2) { // Assuming 3.png is at index 2
-            this.movementInterval = 30; // Interval for changing direction
-            this.movementTimer = 0; // Timer for controlling movement
+          if (type === 2) {
+            this.movementInterval = 30;
+            this.movementTimer = 0;
           }
         }
 
@@ -507,93 +546,54 @@ const submitScore = (score, gameId) => {
           if (this.isDying) {
             this.deathFrameCount++;
             if (this.deathFrameCount >= this.deathAnimationFrames) {
-              this.isDead = true; // Mark the enemy as dead
+              this.isDead = true;
             }
           } else {
-            this.speed = this.baseSpeed * enemySpeedFactor; // Update speed based on the enemySpeedFactor
+            this.speed = this.baseSpeed * enemySpeedFactor;
 
-            // Adjust speed for specific enemy types
-            if (this.type === 5) { // Assuming 6.png is at index 5
-              this.speed *= 1.25; // 25% faster
-            } else if (this.type === 7) { // Assuming 8.png is at index 7
-              this.speed *= 0.75; // 25% slower
-            } else if (this.type === 1) { // Assuming 2.png is at index 1
-              this.speed *= 1.25; // 25% faster
-            }
-
-            if (this.homingTypes.includes(this.type)) { // Check if the enemy is a homing type
-              // Calculate direction towards player
+            if (this.homingTypes.includes(this.type)) {
               let direction = p5.Vector.sub(player.pos, this.pos);
               direction.setMag(this.speed);
               this.pos.add(direction);
             } else {
-              // Normal behavior for other enemies
               this.pos.y += this.speed;
 
-              // Special movement logic for 2.png
-              if (this.type === 1) { // Assuming 2.png is at index 1
-                if (this.moveCounter >= 20) { // 20 frames to move right or left
-                  this.moveRight = !this.moveRight; // Switch direction
+              if (this.type === 1) {
+                if (this.moveCounter >= 20) {
+                  this.moveRight = !this.moveRight;
                   this.moveCounter = 0;
                 }
                 this.pos.x += this.moveRight ? this.speed : -this.speed;
                 this.moveCounter++;
               }
 
-              // Random movement logic for 3.png
-              if (this.type === 2) { // Assuming 3.png is at index 2
+              if (this.type === 2) {
                 this.movementTimer++;
                 if (this.movementTimer >= this.movementInterval) {
                   this.movementDirection = p.random() > 0.5 ? 1 : -1;
-                  this.pos.x += this.movementDirection * this.speed * 10; // Move by blocks of 10 pixels
+                  this.pos.x += this.movementDirection * this.speed * 10;
                   this.movementTimer = 0;
                 }
               }
 
-              // Random movement logic for 1.png
-              if (this.type === 0) { // Assuming 1.png is at index 0
+              if (this.type === 0) {
                 this.pos.x += this.movementDirection * this.speed;
-                // Change direction randomly
                 if (p.random() < 0.01) {
                   this.movementDirection *= -1;
                 }
               }
 
-              if (this.type === 6) { // Only apply shooting logic to 7.png
+              if (this.type === 6) {
                 this.shootTimer++;
                 if (this.shootTimer >= this.shootInterval) {
                   this.shoot();
                   this.shootTimer = 0;
-                  this.shootInterval = p.floor(p.random(80, 120)); // Randomize the interval for the next shot
+                  this.shootInterval = p.floor(p.random(80, 120));
                 }
               }
 
               if (this.pos.y > p.height) {
-                this.pos.y = -50; // Reset to the top when it reaches the bottom
-              }
-            }
-          }
-
-          // Update lasers for all enemies, even if they are dead
-          for (let i = this.lasers.length - 1; i >= 0; i--) {
-            if (this.lasers[i]) {
-              this.lasers[i].update();
-              if (this.lasers[i].offScreen()) {
-                this.lasers.splice(i, 1); // Remove laser if it's off screen
-              } else if (this.lasers[i].hits(player)) {
-                // Handle player hit logic here
-                if (lives > 1) {
-                  lives--; // Use a life
-                  updateLives(lives); // Update lives in parent component
-                  this.lasers.splice(i, 1); // Remove the laser that hit the player
-                } else {
-                  gameOver = true;
-                  if (!scoreSubmitted) {
-                    setScoreSubmitted(true);
-                    submitScore(score, currentGameId);
-                  }
-                  p.noLoop();
-                }
+                this.pos.y = -50;
               }
             }
           }
@@ -609,16 +609,11 @@ const submitScore = (score, gameId) => {
             p.image(this.img, 0, 0, 48, 48);
           }
           p.pop();
-
-          // Show lasers for all enemies, even if they are dead
-          for (let laser of this.lasers) {
-            laser.show();
-          }
         }
 
         shoot() {
-          if (this.type === 6) { // Only allow shooting for 7.png
-            this.lasers.push(new Laser(this.pos.x, this.pos.y, 5)); // Adjust laser speed as necessary
+          if (this.type === 6) {
+            lasers.push(new Laser(this.pos.x, this.pos.y, 5)); // Add laser to global array
           }
         }
 
@@ -636,14 +631,29 @@ const submitScore = (score, gameId) => {
 
     const p5Instance = new p5(sketch);
     return () => p5Instance.remove();
-  }, [updateLives]);
+  }, [updateLives, scoreSubmitted, SCORE_MILESTONES, submitScore]);
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '25vh', backgroundColor: 'transparent' }}>
       <div ref={sketchRef} style={{ width: '800px', height: '600px', position: 'relative', backgroundColor: 'transparent' }}>
-        {showSpeechBubbleState && (
-          <div className="speech-bubble" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', opacity: showSpeechBubbleState ? 1 : 0 }}>
-            {aiResponseState}
+        {isGameOverScreenVisible && (
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            color: 'white',
+            fontSize: '24px',
+          }}>
+            <h2>Game Over</h2>
+            <p>Your score: {score}</p>
+            <p>Press ENTER to play again</p>
           </div>
         )}
       </div>
